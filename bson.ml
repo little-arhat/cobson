@@ -8,36 +8,36 @@ open CalendarLib
 (* TODO: make functor to use custom types for list at least *)
 
 
-type bson_element =
+type element =
   | Double of float
-  | String of bson_string
-  | Document of bson_document
-  | Array of bson_array
-  | BinaryData of bson_binary (* change it *)
-  | Objectid of bson_objectid
+  | String of string
+  | Document of document
+  | Array of array
+  | BinaryData of binary (* change it *)
+  | Objectid of objectid
   | Datetime of Calendar.t
   | Null
   | Boolean of bool
-  | Regex of (bson_cstring * bson_cstring)
-  | JSCode of bson_string
-  | Symbol of bson_string
-  | JSCodeWithScope of (bson_string * bson_document)
+  | Regex of (cstring * cstring)
+  | JSCode of string
+  | Symbol of string
+  | JSCodeWithScope of (string * document)
   | Int32 of int32
   | Timestamp of int64
   | Int64 of int64
   | Minkey
   | Maxkey
-and bson_cstring = UTF8.t
-and bson_string = UTF8.t
-and bson_objectid = UTF8.t
-and bson_binary =
-  | Generic of bson_string
-  | Function of bson_string
-  | GenericOld of bson_string
-  | UUID of bson_string
-  | MD5 of bson_string
-  | UserDefined of bson_string
-and bson_document = (bson_cstring * bson_value) list
-and bson_array = bson_value list (* array instead of list? *)
+and cstring = UTF8.t
+and string = UTF8.t
+and objectid = UTF8.t
+and binary =
+  | Generic of string
+  | Function of string
+  | GenericOld of string
+  | UUID of string
+  | MD5 of string
+  | UserDefined of string
+and document = (cstring * value) list
+and array = value list (* array instead of list? *)
 
 let par
