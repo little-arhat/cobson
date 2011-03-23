@@ -7,6 +7,10 @@ open CalendarLib
 (* TODO: objectid must be 12 bytes long -- implement it *)
 (* TODO: make functor to use custom types for list at least *)
 
+let ( & ) f x = f x
+
+let ( % ) f g = fun x -> f (g x)
+
 
 type element =
   | Double of float
