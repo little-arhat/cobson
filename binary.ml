@@ -4,7 +4,7 @@
  * Heavily reference Jane Street Core, but packing is done in place,
  * and per BSON's spec, little endian is used. *)
 
-let pack_signed_32 n =
+let pack_int32 n =
   let buf = String.create 4 in
     buf.[3] <-
       Char.unsafe_chr (0xFF land Int32.to_int (Int32.shift_right n 24));
@@ -15,7 +15,7 @@ let pack_signed_32 n =
     buf.[0] <- Char.unsafe_chr (0xFF land Int32.to_int n);
     buf
 
-let unpack_signed_32 ~buf ~pos =
+let unpack_int32 ~buf ~pos =
   Int32.logor
     (Int32.shift_left (Int32.of_int (Char.code buf.[pos + 3])) 24)
     (Int32.of_int
@@ -23,7 +23,7 @@ let unpack_signed_32 ~buf ~pos =
         lor (Char.code buf.[pos + 1] lsl 8)
         lor (Char.code buf.[pos])))
 
-let pack_signed_64 v =
+let pack_int64 v =
   let buf = String.create 8 in
     let top3 = Int64.to_int (Int64.shift_right v 40) in
     let mid3 = Int64.to_int (Int64.shift_right v 16) in
@@ -38,7 +38,7 @@ let pack_signed_64 v =
     buf.[0] <- Char.unsafe_chr (0xFF land bot2);
     buf
 
-let unpack_signed_64 ~buf ~pos =
+let unpack_int64 ~buf ~pos =
   Int64.logor
     (Int64.logor
       (Int64.shift_left
@@ -54,6 +54,6 @@ let unpack_signed_64 ~buf ~pos =
     (Int64.of_int (Char.code buf.[pos + 1] lsl 8
                     lor Char.code buf.[pos]))
 
-let pack_float f = pack_signed_64 (Int64.bits_of_float f)
+let pack_float f = pack_int64 (Int64.bits_of_float f)
 
-let unpack_float ~buf ~pos = Int64.float_of_bits (unpack_signed_64 buf pos)
+let unpack_float ~buf ~pos = Int64.float_of_bits (unpack_int64 buf pos)
