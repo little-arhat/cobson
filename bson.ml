@@ -6,6 +6,7 @@ open CalendarLib
 (* TODO: csting shouldn't contain null byte -- implement it *)
 (* TODO: objectid must be 12 bytes long -- implement it *)
 (* TODO: make functor to use custom types for list at least *)
+(* TODO: use Res monad (manatki are cool!)  *)
 
 let ( & ) f x = f x
 
@@ -44,4 +45,7 @@ and binary =
 and document = (cstring * value) list
 and array = value list (* array instead of list? *)
 
-let par
+let decode_stream bytes =
+  let rec loop acc = parser
+    | [< ''\x01'; d = parse_double; rest >] -> loop (Double d)::acc & rest
+  in loop [] bytes
