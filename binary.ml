@@ -15,7 +15,8 @@ let pack_int32 n =
     buf.[0] <- Char.unsafe_chr (0xFF land Int32.to_int n);
     buf
 
-let unpack_int32 ~buf ~pos =
+let unpack_int32 buf =
+  let pos = 0 in
   Int32.logor
     (Int32.shift_left (Int32.of_int (Char.code buf.[pos + 3])) 24)
     (Int32.of_int
@@ -38,7 +39,8 @@ let pack_int64 v =
     buf.[0] <- Char.unsafe_chr (0xFF land bot2);
     buf
 
-let unpack_int64 ~buf ~pos =
+let unpack_int64 buf =
+  let pos = 0 in
   Int64.logor
     (Int64.logor
       (Int64.shift_left
@@ -56,4 +58,4 @@ let unpack_int64 ~buf ~pos =
 
 let pack_float f = pack_int64 (Int64.bits_of_float f)
 
-let unpack_float ~buf ~pos = Int64.float_of_bits (unpack_int64 buf pos)
+let unpack_float buf = Int64.float_of_bits (unpack_int64 buf)
