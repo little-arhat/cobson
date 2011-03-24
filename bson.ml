@@ -1,4 +1,3 @@
-
 open CalendarLib
 
 open Util
@@ -78,6 +77,7 @@ let decode_stream bytes =
     | '\x12' -> Int64 (parse_int64 st)
     | '\xFF' -> Minkey
     | '\x7F' -> Maxkey
+    | _ -> malformed "parse_element"
   and parse_string = parser
     | [< len = parse_int32; rest >] -> let st = parse_cstring rest in
                                        if String.length_int32 st = len - 1
