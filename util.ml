@@ -16,32 +16,43 @@ let ( %%% ) f g = fun x y z -> f (g x y z)
 (* `right currying` *)
 let flip f x y = f y x
 
-let rec stake n s =
-  if n > 0
-  then Stream.icons (Stream.next s) & Stream.slazy (fun _ -> take (n-1) s)
-  else Stream.sempty
+module Stream = struct
+  include Stream
 
-(* from BatStream *)
-let rec stake_while f s =
-  Stream.slazy
-    (fun _ ->
-      match Stream.peek s with
-        | Some h ->
-          Stream.junk s;
-          if f h
-          then
-             Stream.icons h (Stream.slazy (fun _ -> stake_while f s))
-          else Stream.sempty
-        | None -> Stream.sempty)
+  let rec take n s =
+    if n > 0
+    then icons (next s) & slazy (fun _ -> take (n-1) s)
+    else sempty
 
-let sto_list s =
-  let buf = ref [] in
-  (Stream.iter (fun x -> buf := x :: !buf) s; List.rev !buf)
+  (* from BatStream *)
+  let rec take_while f s =
+    slazy (fun _ -> match peek s with
+      | Some h -> junk s;
+        if f h
+        then icons h (slazy (fun _ -> take_while f s))
+        else sempty
+      | None -> sempty)
 
-let sto_string s =
-  let sl = sto_list s in
-  let len = List.length sl in
-  let st = String.create len
-  in (List.iter (let i = ref 0 in fun x -> (st.[!i] <- x; incr i)) sl; st)
+  let to_list s =
+    let buf = ref [] in
+    (iter (fun x -> buf := x :: !buf) s; List.rev !buf)
 
-let stake_string = stake >>> sto_string
+  let to_string s =
+    let sl = to_list s in
+    let len = List.length sl in
+    let st = String.create len
+    in (List.iter (let i = ref 0 in fun x -> (st.[!i] <- x; incr i)) sl; st)
+
+  let take_string = take >>> to_string
+
+end
+
+module List = struct
+  include List
+  let length_int32 = length >> Int32.of_int
+end
+
+module String = struct
+  include String
+  let length_int32 = length >> Int32.of_int
+end
