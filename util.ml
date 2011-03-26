@@ -62,3 +62,19 @@ module String = struct
   include String
   let length_int32 l = length l |> Int32.of_int
 end
+
+(* resource management operations *)
+let try_finally action finally =
+  try
+    let result = action () in
+      finally ();
+      result;
+  with x -> finally (); raise x
+
+let with_resource resource action post =
+  try_finally (fun () -> action resource) (fun () -> post resource)
+
+let with_file_in filename action =
+  with_resource (open_in filename) action close_in
+let with_file_out filename action =
+  with_resource (open_out filename) action close_out
