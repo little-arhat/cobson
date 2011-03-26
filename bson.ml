@@ -65,7 +65,7 @@ let decode_stream bytes =
     | '\x03' -> Document (parse_document st)
     | '\x04' -> Array (List.map snd & parse_document st)
     | '\x05' -> BinaryData (parse_binary st)
-    | '\x07' -> Objectid (S.take_stream 12 st)
+    | '\x07' -> Objectid (S.take_string 12 st)
     | '\x08' -> Boolean (parse_boolean & S.next st)
     | '\x09' -> Datetime (Calendar.from_unixfloat & parse_double st)
     | '\x0A' -> Null
