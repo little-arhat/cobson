@@ -1,6 +1,7 @@
 open CalendarLib
 
 open Util
+open Binary
 
 (* Thanks to: kiyoto (caml-mongo) *)
 
