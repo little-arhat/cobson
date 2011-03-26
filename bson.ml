@@ -118,3 +118,7 @@ let decode_stream bytes =
   in try
        parse_document bytes
     with S.Failure -> malformed "malformed bson data"
+
+let decode_string = S.of_string >> decode_stream
+
+let decode_file = flip with_file_in & S.of_channel >> decode_stream
