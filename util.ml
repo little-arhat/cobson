@@ -24,6 +24,11 @@ module Stream = struct
     then icons (next s) & slazy (fun _ -> take (n-1) s)
     else sempty
 
+  let rec take_int32 n s =
+    if n > 0l
+    then icons (next s) & slazy (fun _ -> take_int32 (Int32.sub n 1l) s)
+    else sempty
+
   (* from BatStream *)
   let rec take_while f s =
     slazy (fun _ -> match peek s with
@@ -44,6 +49,7 @@ module Stream = struct
     in (List.iter (let i = ref 0 in fun x -> (st.[!i] <- x; incr i)) sl; st)
 
   let take_string = take >>> to_string
+  let take_string_int32 = take_int32 >>> to_string
 
 end
 
