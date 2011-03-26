@@ -49,14 +49,16 @@ and array = element list (* array instead of list? *)
 
 module S = Stream
 
+
 let decode_stream bytes =
   let rec parse_document = parser
-    | [< len = parse_int32; st; ''\x00' >] -> parse_list [] (S.take len st)
+    | [< len = parse_int32; st; ''\x00' >] ->
+      parse_list [] (S.take_int32 len st)
+    | [< >] -> malformed "parse_document"
   and parse_list acc = parser
     | [< 'code; key = parse_cstring; el = parse_element code; st >] ->
       parse_list ((key, el)::acc) st
     | [< >] -> acc
-  and parse_cstring = S.take_while (fun c -> c <> '\x00') >> S.to_string
   and parse_element c st = match c with
     | '\x01' -> Double (parse_double st)
     | '\x02' -> String (parse_string st)
@@ -78,16 +80,8 @@ let decode_stream bytes =
     | '\x12' -> Int64 (parse_int64 st)
     | '\xFF' -> Minkey
     | '\x7F' -> Maxkey
-    | _ -> malformed "parse_element"
-  and parse_string = parser
-    | [< len = parse_int32; rest >] -> let st = parse_cstring rest in
-                                       if String.length_int32 st = len - 1
-                                       then st
-                                       else malformed "parse_string"
-    | [< >] -> malformed "parse_string"
-  (* we use String.length insted if UTF8.length, 'cause  *)
-  (* *len* shows number of bytes, not symbols.  *)
-  (* we substracts 1 from *len*, because it counts trailing null byte *)
+    | _ -> malformed "parse_element: invalid type"
+  and parse_cstring = S.take_while (fun c -> c <> '\x00') >> S.to_string
   and parse_double = S.take_string 8 >> unpack_float
   and parse_int32 = S.take_string 4 >> unpack_int32
   and parse_int64 = S.take_string 8 >> unpack_int64
@@ -95,14 +89,16 @@ let decode_stream bytes =
     | '\x00' -> false
     | '\x01' -> true
     |  _ -> malformed "parse_boolean"
-  and parse_jscode = parser
-    | [< len = parse_int32; st = parse_string; doc = parse_list [] >] ->
-      if List.length_int32 doc = len
-      then (st, doc)
-      else malformed "parse_jscode"
-    | [< >] -> malformed "parse_jscode"
-  and parse_binary = parser
-    | [< len = parse_int32; 'c; st >] -> parse_subtype c & S.take_string len st
+  and parse_string = parser
+    | [< len = parse_int32; rest >] -> let st = parse_cstring rest in
+                                       let len' = Int32.sub len 1l in
+                                       if String.length_int32 st = len'
+                                       then st
+                                       else malformed "parse_string"
+    | [< >] -> malformed "parse_string"
+  (* we use String.length insted if UTF8.length, 'cause  *)
+  (* *len* shows number of bytes, not symbols.  *)
+  (* we substracts 1 from *len*, because it counts trailing null byte *)
   and parse_subtype c st = match c with
     | '\x00' -> Generic st
     | '\x01' -> Function st
@@ -110,6 +106,15 @@ let decode_stream bytes =
     | '\x03' -> UUID st
     | '\x05' -> MD5 st
     | '\x80' -> UserDefined st
+    | _ -> malformed "invalid binary subtype!"
+  and parse_binary = parser
+    | [< len = parse_int32; 'c; st >] -> parse_subtype c & S.take_string_int32 len st
+  and parse_jscode = parser
+    | [< len = parse_int32; st = parse_string; doc = parse_document >] ->
+      if List.length_int32 doc = len
+      then (st, doc)
+      else malformed "parse_jscode"
+    | [< >] -> malformed "parse_jscode"
   in try
        parse_document bytes
     with S.Failure -> malformed "malformed bson data"
