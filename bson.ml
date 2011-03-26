@@ -44,8 +44,8 @@ and binary =
   | UUID of string
   | MD5 of string
   | UserDefined of string
-and document = (cstring * value) list
-and array = value list (* array instead of list? *)
+and document = (cstring * element) list
+and array = element list (* array instead of list? *)
 
 module S = Stream
 
