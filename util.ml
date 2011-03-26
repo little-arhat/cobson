@@ -55,10 +55,10 @@ end
 
 module List = struct
   include List
-  let length_int32 = length >> Int32.of_int
+  let length_int32 l = length l |> Int32.of_int
 end
 
 module String = struct
   include String
-  let length_int32 = length >> Int32.of_int
+  let length_int32 l = length l |> Int32.of_int
 end
