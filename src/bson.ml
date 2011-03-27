@@ -53,7 +53,7 @@ let decode_stream bytes =
       parse_list [] (S.take_int32 len st)
     | [< >] -> malformed "parse_document"
   and parse_list acc = parser
-    | [< ''\x00' >] -> acc
+    | [< ''\x00' >] -> List.rev acc
     | [< 'code; key = parse_cstring; el = parse_element code; st >] ->
       parse_list ((key, el)::acc) st
     | [< >] -> malformed "parse_list : doesn't contain null byte"
@@ -125,3 +125,4 @@ let decode_stream bytes =
 let decode_string = S.of_string >> decode_stream
 
 let decode_file = flip with_file_in & S.of_channel >> decode_stream
+
