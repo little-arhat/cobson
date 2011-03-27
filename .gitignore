@@ -1,12 +1,5 @@
 _build
-*.native
-*.byte
-*.docdir
-*.cmx
-*.cmo
-*.cmi
-*.out
 setup.data
 setup.log
 src/config.*
-rel
+*.ba*
