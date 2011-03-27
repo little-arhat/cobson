@@ -1,0 +1,10 @@
+# OASIS_START
+# DO NOT EDIT (digest: 2723dc1a5bdd66381dc4dbc222ce6734)
+# Executable test
+<tests/test.{native,byte}>: pkg_unix
+<tests/*.ml{,i}>: pkg_unix
+# Library cobson
+"src": include
+<src/*.ml{,i}>: pkg_extlib
+<src/*.ml{,i}>: pkg_calendar
+# OASIS_STOP

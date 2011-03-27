@@ -1,0 +1,5 @@
+(* OASIS_START *)
+(* DO NOT EDIT (digest: 8b6ae825d38f51dfcddc38c45715b7b3) *)
+Authors of cobson
+Roma Sokolov
+(* OASIS_STOP *)
