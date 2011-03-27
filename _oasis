@@ -11,9 +11,9 @@ BuildTools: ocamlbuild
 Library cobson
   Path:            src
   BuildTools:      ocamlbuild
-  Modules:         Bson, Util, Binary
+  Modules:         Bson
   InternalModules: Util, Binary
-  BuildDepends: extlib, calendar
+  BuildDepends: extlib, calendar, camlp4
 
 Executable test
   Path: tests/
