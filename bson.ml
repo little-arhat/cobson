@@ -6,11 +6,8 @@ open Binary
 (* Thanks to: kiyoto (caml-mongo) *)
 
 
-(* TODO: csting shouldn't contain null byte -- implement it *)
-(* TODO: objectid must be 12 bytes long -- implement it *)
 (* TODO: make functor to use custom types for list at least *)
 (* TODO: use Res monad (manatki are cool!)  *)
-(* TODO: parse_double, binary pack/unpack -- use stream *)
 
 exception MalformedBSON of string
 let malformed s = raise (MalformedBSON s)
