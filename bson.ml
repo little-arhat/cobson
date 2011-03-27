@@ -49,13 +49,14 @@ module S = Stream
 
 let decode_stream bytes =
   let rec parse_document = parser
-    | [< len = parse_int32; st; ''\x00' >] ->
+    | [< len = parse_int32; st; >] ->
       parse_list [] (S.take_int32 len st)
     | [< >] -> malformed "parse_document"
   and parse_list acc = parser
+    | [< ''\x00' >] -> acc
     | [< 'code; key = parse_cstring; el = parse_element code; st >] ->
       parse_list ((key, el)::acc) st
-    | [< >] -> acc
+    | [< >] -> malformed "parse_list : doesn't contain null byte"
   and parse_element c st = match c with
     | '\x01' -> Double (parse_double st)
     | '\x02' -> String (parse_string st)
@@ -112,9 +113,14 @@ let decode_stream bytes =
       then (st, doc)
       else malformed "parse_jscode"
     | [< >] -> malformed "parse_jscode"
-  in try
-       parse_document bytes
+  in
+  let res =
+    try parse_document bytes
     with S.Failure -> malformed "malformed bson data"
+  in
+  match S.peek bytes with
+    | None -> res
+    | Some _ -> malformed "data after trailing null byte!"
 
 let decode_string = S.of_string >> decode_stream
 
