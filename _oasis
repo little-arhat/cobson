@@ -4,7 +4,7 @@ Version:     0.0.1
 Synopsis:    BSON codec for OCaml
 Authors:     Roma Sokolov
 License:     MIT
-LicenseFile: LICENCE
+LicenseFile: LICENSE
 Plugins:     DevFiles (0.2), META (0.2), StdFiles (0.2)
 BuildTools: ocamlbuild
 
@@ -20,7 +20,7 @@ Executable test
   Install: false
   CompiledObject: best
   MainIs: test.ml
-  BuildDepends: unix
+  BuildDepends: bson, extlib, calendar
 
 SourceRepository github
   Type:     git
