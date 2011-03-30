@@ -88,15 +88,12 @@ let decode_stream bytes =
     | '\x01' -> true
     |  _ -> malformed "parse_boolean"
   and parse_string = parser
-    | [< len = parse_int32; rest >] -> let st = parse_cstring rest in
-                                       let len' = Int32.sub len 1l in
-                                       if String.length_int32 st = len'
-                                       then st
-                                       else malformed "parse_string"
+    | [< len = parse_int32; rest >] ->
+      let len' = Int32.sub len 1l in
+      let int_len = Int32.to_int len' in
+      let s = S.take_int32 len' rest |> S.to_string ~len:int_len
+      in S.junk rest ; s (* junk trailing null *)
     | [< >] -> malformed "parse_string"
-  (* we use String.length insted if UTF8.length, 'cause  *)
-  (* *len* shows number of bytes, not symbols.  *)
-  (* we substracts 1 from *len*, because it counts trailing null byte *)
   and parse_subtype c st = match c with
     | '\x00' -> Generic st
     | '\x01' -> Function st
