@@ -42,11 +42,10 @@ module Stream = struct
     let buf = ref [] in
     (iter (fun x -> buf := x :: !buf) s; List.rev !buf)
 
-  let to_string s =
-    let sl = to_list s in
-    let len = List.length sl in
-    let st = String.create len
-    in (List.iter (let i = ref 0 in fun x -> (st.[!i] <- x; incr i)) sl; st)
+  let to_string ?(len=16) s =
+    let buf = Buffer.create len in
+    let () = iter (fun ch -> Buffer.add_char buf ch) s in
+    Buffer.contents buf
 
   let take_string = take >>> to_string
   let take_string_int32 = take_int32 >>> to_string
