@@ -72,7 +72,7 @@ let decode_stream bytes =
                 Regex (first, sec)
     | '\x0D' -> JSCode (parse_string st)
     | '\x0E' -> Symbol (parse_string st)
-    | '\x0F' -> JSCodeWithScope (parse_jscode st)
+    | '\x0F' -> JSCodeWithScope (s_comb (flip Stream.take_int32) parse_int32 st)
     | '\x10' -> Int32 (parse_int32 st)
     | '\x11' -> Timestamp (parse_int64 st)
     | '\x12' -> Int64 (parse_int64 st)
@@ -105,10 +105,7 @@ let decode_stream bytes =
   and parse_binary = parser
     | [< len = parse_int32; 'c; st >] -> parse_subtype c & S.take_string_int32 len st
   and parse_jscode = parser
-    | [< len = parse_int32; st = parse_string; doc = parse_document >] ->
-      if List.length_int32 doc = len
-      then (st, doc)
-      else malformed "parse_jscode"
+    | [< st = parse_string; doc = parse_document >] -> (st, doc)
     | [< >] -> malformed "parse_jscode"
   in
   let res =

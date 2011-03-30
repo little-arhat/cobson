@@ -16,6 +16,10 @@ let ( %%% ) f g = fun x y z -> f (g x y z)
 (* `right currying` *)
 let flip f x y = f y x
 
+(* combinators *)
+let k_comb x y = x
+let s_comb x y z = x z (y z);;
+
 module Stream = struct
   include Stream
 
