@@ -20,7 +20,7 @@ Executable test
   Install: false
   CompiledObject: best
   MainIs: test.ml
-  BuildDepends: bson, extlib, calendar
+  BuildDepends: extlib, calendar
 
 SourceRepository github
   Type:     git
