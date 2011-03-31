@@ -20,8 +20,9 @@ let flip f x y = f y x
 let k_comb x y = x
 let s_comb x y z = x z (y z);;
 
-module Stream = struct
-  include Stream
+
+module ExStream = struct
+  open Stream
 
   let rec take n s =
     if n > 0
@@ -56,15 +57,11 @@ module Stream = struct
 
 end
 
-module List = struct
-  include List
-  let length_int32 l = length l |> Int32.of_int
-end
 
-module String = struct
-  include String
-  let length_int32 l = length l |> Int32.of_int
-end
+let list_length_int32 l = List.length l |> Int32.of_int
+
+let str_length_int32 s = String.length s |> Int32.of_int
+
 
 (* resource management operations *)
 let try_finally action finally =
