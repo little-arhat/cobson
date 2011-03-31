@@ -119,4 +119,44 @@ let decode_stream bytes =
 
 let decode_string = S.of_string >> decode_stream
 
+let decode_file = flip with_file_in <| S.of_channel >> decode_stream
 
+let encode_to_stream document =
+  let rec encode_document doc = match doc with
+    | (key, element)::tail ->
+      S.lapp (fun _ -> encode_cstring key)
+        (S.lapp (fun _ -> encode_element element) <|
+           S.slazy (fun _ -> encode_document tail))
+    | _ -> [< '"\x00" >]
+  and encode_list l = S.sempty
+  and encode_element el = match el with
+    | Double d -> [< '"\x01"; '(pack_float d) >]
+    | String s -> [< '"\x02"; encode_string s >]
+    | Document d -> let len = list_length_int32 d in
+                    [< '"\x03"; '(pack_int32 len); encode_document d >]
+    | Array l -> [< '"\x04"; encode_list l >]
+    | BinaryData bd -> [< '"\x05"; encode_binary bd >]
+    | ObjectId s -> [< '"\x07"; 's >]
+    | Boolean b -> [< '"\x08"; '(if b then "\x01" else "\x00") >]
+    | Datetime dt -> [< '"\x09"; '(Calendar.to_unixfloat dt |> pack_float) >]
+    | Null -> [< '"\x0A" >]
+    | Regex (first, sec) -> [< '"\x0B"; encode_cstring first;
+                               encode_cstring sec >]
+    | JSCode s -> [< '"\x0D"; encode_string s >]
+    | Symbol s -> [< '"\x0E"; encode_string s >]
+    | JSCodeWithScope (s, d) ->
+      let len = Int32.add (str_length_int32 s) (list_length_int32 d) |>
+                Int32.add 10l (* 2*4 - int32 fields + 2*1 -- trailing nulls *)
+      in [< '"\x0f"; '(pack_int32 len); encode_string s; encode_document d >]
+    | Int32 i -> [< '"\x10"; '(pack_int32 i) >]
+    | Timestamp l -> [< '"\x11"; '(pack_int64 l) >]
+    | Int64 l -> [< '"\x12"; '(pack_int64 l) >]
+    | Minkey -> [< '"\xFF" >]
+    | Maxkey -> [< '"\x7F" >]
+  and encode_binary bd = [< >]
+  and encode_string s = [< '(str_length_int32 s |> pack_int32);
+                           (encode_cstring s) >]
+  and encode_cstring s = [< '"\x00" >] (* FIX IMPLEMENT ENCODE*)
+  in
+  let len = list_length_int32 document in
+  Stream.icons (pack_int32 len) <| encode_document document
