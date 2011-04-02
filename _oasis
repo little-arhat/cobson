@@ -13,14 +13,14 @@ Library cobson
   BuildTools:      ocamlbuild
   Modules:         Bson
   InternalModules: Util, Binary
-  BuildDepends: extlib, calendar, camlp4
+  BuildDepends:    calendar, camlp4
 
 Executable test
   Path: tests/
   Install: false
   CompiledObject: best
   MainIs: test.ml
-  BuildDepends: extlib, calendar
+  BuildDepends: calendar
 
 SourceRepository github
   Type:     git

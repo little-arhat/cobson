@@ -1,11 +1,14 @@
 # OASIS_START
 # DO NOT EDIT (digest: 12f7c36a78ae3ec255a47b60fba2d3b8)
 # Executable test
-<tests/test.{native,byte}>: pkg_unix
-<tests/*.ml{,i}>: pkg_unix
+<tests/test.{native,byte}>: pkg_calendar
+<tests/*.ml{,i}>: pkg_calendar
 # Library cobson
 "src": include
-<src/*.ml{,i}>: pkg_extlib
+<src/cobson.{cma,cmxa}>: oasis_library_cobson_byte
+<src/*.ml{,i}>: oasis_library_cobson_byte
+<src/cobson.{cma,cmxa}>: oasis_library_cobson_native
+<src/*.ml{,i}>: oasis_library_cobson_native
 <src/*.ml{,i}>: pkg_camlp4
 <src/*.ml{,i}>: pkg_calendar
 # OASIS_STOP

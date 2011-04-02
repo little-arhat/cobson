@@ -21,9 +21,8 @@ type element =
   | Int64 of int64
   | Minkey
   | Maxkey
-and cstring = UTF8.t
-and string = UTF8.t
-and objectid = UTF8.t
+and cstring = string
+and objectid = string
 and binary =
   | Generic of string
   | Function of string
