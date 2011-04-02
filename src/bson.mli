@@ -38,3 +38,7 @@ val decode_stream : char Stream.t -> document
 val decode_file : string -> document
 
 val decode_string : string -> document
+
+val encode_to_stream : document -> string Stream.t
+
+val encode : document -> string

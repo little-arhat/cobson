@@ -169,3 +169,5 @@ let encode_to_stream document =
   in
   let len = list_length_int32 document in
   Stream.icons (pack_int32 len) <| encode_document document
+
+let encode = encode_to_stream >> ES.to_string_fun (fun i -> i)
