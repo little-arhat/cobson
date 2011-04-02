@@ -17,7 +17,7 @@ let ( %%% ) f g = fun x y z -> f (g x y z)
 let flip f x y = f y x
 
 (* combinators *)
-let k_comb x y = x
+let k_comb x _y = x
 let s_comb x y z = x z (y z);;
 
 
@@ -49,8 +49,11 @@ module ExStream = struct
 
   let to_string ?(len=16) s =
     let buf = Buffer.create len in
-    let () = iter (fun ch -> Buffer.add_char buf ch) s in
-    Buffer.contents buf
+    iter (fun ch -> Buffer.add_char buf ch) s; Buffer.contents buf
+
+  let to_string_fun fn s =
+    let buf = Buffer.create 16 in
+    iter (fun it -> Buffer.add_string buf <| fn it ) s; Buffer.contents buf
 
   let take_string = take >>> to_string
   let take_string_int32 = take_int32 >>> to_string
