@@ -92,6 +92,10 @@ let decode_stream bytes =
       let s = ES.take_int32 len' rest |> ES.to_string ~len:int_len
       in S.junk rest ; s (* junk trailing null *)
     | [< >] -> malformed "parse_string"
+  and parse_binary = parser
+    | [< len = parse_int32; 'c; st >] -> ES.take_string_int32 len st |>
+                                         parse_subtype c
+    | [< >] -> malformed "parse_binary"
   and parse_subtype c st = match c with
     | '\x00' -> Generic st
     | '\x01' -> Function st
@@ -100,10 +104,6 @@ let decode_stream bytes =
     | '\x05' -> MD5 st
     | '\x80' -> UserDefined st
     | _ -> malformed "invalid binary subtype!"
-  and parse_binary = parser
-    | [< len = parse_int32; 'c; st >] -> ES.take_string_int32 len st |>
-                                         parse_subtype c
-    | [< >] -> malformed "parse_binary"
   and parse_jscode = parser
     | [< st = parse_string; doc = parse_document >] -> (st, doc)
     | [< >] -> malformed "parse_jscode"
@@ -125,7 +125,7 @@ let encode_to_stream document =
     | (key, element)::tail ->
       S.lapp (fun _ -> encode_cstring key)
         (S.lapp (fun _ -> encode_element element) <|
-           S.slazy (fun _ -> encode_document tail))
+            S.slazy (fun _ -> encode_document tail))
     | _ -> [< '"\x00" >]
   and encode_list l = S.sempty
   and encode_element el = match el with
@@ -152,10 +152,20 @@ let encode_to_stream document =
     | Int64 l -> [< '"\x12"; '(pack_int64 l) >]
     | Minkey -> [< '"\xFF" >]
     | Maxkey -> [< '"\x7F" >]
-  and encode_binary bd = [< >]
   and encode_string s = [< '(str_length_int32 s |> pack_int32);
                            (encode_cstring s) >]
-  and encode_cstring s = [< '"\x00" >] (* FIX IMPLEMENT ENCODE*)
+  and encode_cstring s = [< 's; '"\x00" >]
+  and encode_binary bd =
+    let (c, st) = encode_subtype bd in
+    let len = str_length_int32 st in
+    [< '(pack_int32 len); 'c; 'st >]
+  and encode_subtype bd = match bd with
+    | Generic st -> ("\x00", st)
+    | Function st -> ("\x01", st)
+    | GenericOld st -> ("\x02", st)
+    | UUID st -> ("\x03", st)
+    | MD5 st -> ("\x05", st)
+    | UserDefined st -> ("\x80", st)
   in
   let len = list_length_int32 document in
   Stream.icons (pack_int32 len) <| encode_document document
