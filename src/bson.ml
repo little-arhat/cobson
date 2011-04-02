@@ -127,13 +127,15 @@ let encode_to_stream document =
         (S.lapp (fun _ -> encode_element element) <|
             S.slazy (fun _ -> encode_document tail))
     | _ -> [< '"\x00" >]
-  and encode_list l = S.sempty
   and encode_element el = match el with
     | Double d -> [< '"\x01"; '(pack_float d) >]
     | String s -> [< '"\x02"; encode_string s >]
     | Document d -> let len = list_length_int32 d in
                     [< '"\x03"; '(pack_int32 len); encode_document d >]
-    | Array l -> [< '"\x04"; encode_list l >]
+    | Array l -> let len = List.length l in
+                 let len' = Int32.of_int len in
+                 let d = List.combine (List.map string_of_int <| range len) l in
+                 [< '"\x04"; '(pack_int32 len'); encode_document d >]
     | BinaryData bd -> [< '"\x05"; encode_binary bd >]
     | ObjectId s -> [< '"\x07"; 's >]
     | Boolean b -> [< '"\x08"; '(if b then "\x01" else "\x00") >]

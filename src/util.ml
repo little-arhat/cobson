@@ -13,8 +13,8 @@ let ( %% ) f g = fun x y -> f (g x y)
 let ( %%% ) f g = fun x y z -> f (g x y z)
 
 
-(* `right currying` *)
 let flip f x y = f y x
+let double x = (x, x)
 
 (* combinators *)
 let k_comb x _y = x
@@ -63,8 +63,16 @@ end
 
 let list_length_int32 l = List.length l |> Int32.of_int
 
-let str_length_int32 s = String.length s |> Int32.of_int
+let list_unfold cons pred start =
+  let rec loop step acc =
+      if pred step then acc
+      else let (value, step') = cons step in
+           loop step' (value::acc)
+  in loop start []
 
+let range ?(start=0) stop = list_unfold (pred >> double) ((==) start) stop
+
+let str_length_int32 s = String.length s |> Int32.of_int
 
 (* resource management operations *)
 let try_finally action finally =
