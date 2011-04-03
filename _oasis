@@ -8,12 +8,10 @@ LicenseFile: LICENSE
 Plugins:     DevFiles (0.2), META (0.2), StdFiles (0.2)
 BuildTools: ocamlbuild
 
-
 Library cobson
   Path:            src
   BuildTools:      ocamlbuild
   Modules:         Bson
-  InternalModules: Util, Binary
   BuildDepends:    calendar, camlp4
   NativeOpt:       -w @a
   ByteOpt:         -w @a
@@ -23,7 +21,7 @@ Executable test
   Install: false
   CompiledObject: best
   MainIs: test.ml
-  BuildDepends: calendar
+  BuildDepends: quickcheck, calendar
 
 SourceRepository github
   Type:     git

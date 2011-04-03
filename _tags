@@ -1,7 +1,9 @@
 # OASIS_START
-# DO NOT EDIT (digest: d0d54182a42b48cfd3ce1f9031ad012f)
+# DO NOT EDIT (digest: f129ee856cd1eac67096d9a80f8702e0)
 # Executable test
+<tests/test.{native,byte}>: pkg_quickcheck
 <tests/test.{native,byte}>: pkg_calendar
+<tests/*.ml{,i}>: pkg_quickcheck
 <tests/*.ml{,i}>: pkg_calendar
 # Library cobson
 "src": include
