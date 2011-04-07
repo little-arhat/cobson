@@ -39,6 +39,12 @@ val decode_file : string -> document
 
 val decode_string : string -> document
 
+val decode : string -> document
+
 val encode_to_stream : document -> string Stream.t
+
+val encode_to_buffer : document -> Buffer.t
+
+val encode_to_string : document -> string
 
 val encode : document -> string

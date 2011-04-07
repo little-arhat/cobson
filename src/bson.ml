@@ -118,6 +118,8 @@ let decode_stream bytes =
 
 let decode_string = S.of_string >> decode_stream
 
+let decode = decode_string
+
 let decode_file = flip with_file_in <| S.of_channel >> decode_stream
 
 let encode_to_stream document =
@@ -169,7 +171,67 @@ let encode_to_stream document =
     | MD5 st -> ("\x05", st)
     | UserDefined st -> ("\x80", st)
   in
+  (* XXX: first int32 shows bytes count, not elements *)
+  (* int ref and collect byte count *)
   let len = list_length_int32 document in
   Stream.icons (pack_int32 len) <| encode_document document
 
-let encode = encode_to_stream >> ES.to_string_fun (fun i -> i)
+let encode_to_buffer document =
+  let buf = Buffer.create 16 in
+  let addc = Buffer.add_char buf in
+  let adds = Buffer.add_string buf in
+  let rec encode_document doc = match doc with
+    | (key, element)::tail ->
+      encode_cstring key; encode_element element; encode_document tail
+    | _ -> addc '\x00'
+  and encode_element el = match el with
+    | Double d -> addc '\x01'; adds <| pack_float d
+    | String s -> addc '\x02'; encode_string s
+    | Document d -> let len = list_length_int32 d in
+                    addc '\x03'; adds <| pack_int32 len; encode_document d
+    | Array l -> let len = List.length l in
+                 let len' = Int32.of_int len in
+                 let d = List.combine (List.map string_of_int <| range len) l in
+                 addc '\x04'; adds <| pack_int32 len'; encode_document d
+    | BinaryData bd -> addc '\x05'; encode_binary bd
+    | ObjectId s -> addc '\x07'; adds s
+    | Boolean b -> addc '\x08'; adds (if b then "\x01" else "\x00")
+    | Datetime dt -> addc '\x09'; adds & pack_float & Calendar.to_unixfloat dt
+    | Null -> addc '\x0A'
+    | Regex (first, sec) -> addc '\x0B'; encode_cstring first; encode_cstring sec
+    | JSCode s -> addc '\x0D'; encode_string s
+    | Symbol s -> addc '\x0E'; encode_string s
+    | JSCodeWithScope (s, d) ->
+      let len = Int32.add (str_length_int32 s) (list_length_int32 d) |>
+                Int32.add 10l (* 2*4 - int32 fields + 2*1 -- trailing nulls *)
+      in
+      addc '\x0f'; adds (pack_int32 len); encode_string s; encode_document d
+    | Int32 i -> addc '\x10'; adds <| pack_int32 i
+    | Timestamp l -> addc '\x11'; adds <| pack_int64 l
+    | Int64 l -> addc '\x12'; adds <| pack_int64 l
+    | Minkey -> addc '\xFF'
+    | Maxkey -> addc '\x7F'
+  and encode_string s = adds & pack_int32 & str_length_int32 s; encode_cstring s
+  and encode_cstring s = adds s; addc '\x00'
+  and encode_binary bd =
+    let (c, st) = encode_subtype bd in
+    let len = str_length_int32 st in
+    adds <| pack_int32 len; addc c; adds st
+  and encode_subtype bd = match bd with
+    | Generic st -> ('\x00', st)
+    | Function st -> ('\x01', st)
+    | GenericOld st -> ('\x02', st)
+    | UUID st -> ('\x03', st)
+    | MD5 st -> ('\x05', st)
+    | UserDefined st -> ('\x80', st)
+  in
+  let () = adds "\x00\x00\x00\x00"; encode_document document in
+  let len32 = Int32.of_int <| Buffer.length buf in
+  let () = buffer_change_substring buf 0 <| pack_int32 len32 in
+  buf
+
+(* let encode_to_string = encode_to_stream >> ES.to_string_fun (fun i -> i) *)
+
+let encode_to_string = encode_to_buffer >> Buffer.contents
+
+let encode = encode_to_string

@@ -89,3 +89,20 @@ let with_file_in filename action =
   with_resource (open_in filename) action close_in
 let with_file_out filename action =
   with_resource (open_out filename) action close_out
+
+(* Ocaml batteries *)
+type buffer =
+    {mutable buffer : string;
+     mutable position : int;
+     mutable length : int;
+     initial_buffer : string
+    }
+
+external buffer_of_t : Buffer.t -> buffer = "%identity"
+external t_of_buffer : buffer -> Buffer.t = "%identity";;
+
+let buffer_change_substring buf pos str =
+  let b = buffer_of_t buf in
+  String.blit str 0 b.buffer pos (String.length str)
+
+
