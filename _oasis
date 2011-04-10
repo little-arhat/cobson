@@ -14,15 +14,17 @@ Library cobson
   Modules:         Bson
   InternalModules: Binary, Util
   BuildDepends:    calendar, camlp4
-  NativeOpt:       -w @a
+  NativeOpt:       -w @a -g
   ByteOpt:         -w @a
 
 Executable test
   Path: tests/
   Install: false
-  CompiledObject: best
+  CompiledObject: byte
   MainIs: test.ml
   BuildDepends: quickcheck, calendar
+  NativeOpt:       -w @a -g
+  ByteOpt:         -w @a -g
 
 SourceRepository github
   Type:     git

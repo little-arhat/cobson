@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 6b79a5f84f772760e8a6d4c931f57662) *)
+(* DO NOT EDIT (digest: 785c3019dde9302416662c40b6facd83) *)
 module OASISGettext = struct
 # 21 "/home/typhon/kamlo/oasis/src/oasis/OASISGettext.ml"
   
@@ -455,18 +455,30 @@ let package_default =
      lib_c = [];
      flags =
        [
+          (["oasis_executable_test_byte"; "ocaml"; "link"; "byte"],
+            [(OASISExpr.EBool true, S [A "-w"; A "@a"; A "-g"])]);
+          (["oasis_executable_test_native"; "ocaml"; "link"; "native"],
+            [(OASISExpr.EBool true, S [A "-w"; A "@a"; A "-g"])]);
+          (["oasis_executable_test_byte"; "ocaml"; "ocamldep"; "byte"],
+            [(OASISExpr.EBool true, S [A "-w"; A "@a"; A "-g"])]);
+          (["oasis_executable_test_native"; "ocaml"; "ocamldep"; "native"],
+            [(OASISExpr.EBool true, S [A "-w"; A "@a"; A "-g"])]);
+          (["oasis_executable_test_byte"; "ocaml"; "compile"; "byte"],
+            [(OASISExpr.EBool true, S [A "-w"; A "@a"; A "-g"])]);
+          (["oasis_executable_test_native"; "ocaml"; "compile"; "native"],
+            [(OASISExpr.EBool true, S [A "-w"; A "@a"; A "-g"])]);
           (["oasis_library_cobson_byte"; "ocaml"; "link"; "byte"],
             [(OASISExpr.EBool true, S [A "-w"; A "@a"])]);
           (["oasis_library_cobson_native"; "ocaml"; "link"; "native"],
-            [(OASISExpr.EBool true, S [A "-w"; A "@a"])]);
+            [(OASISExpr.EBool true, S [A "-w"; A "@a"; A "-g"])]);
           (["oasis_library_cobson_byte"; "ocaml"; "ocamldep"; "byte"],
             [(OASISExpr.EBool true, S [A "-w"; A "@a"])]);
           (["oasis_library_cobson_native"; "ocaml"; "ocamldep"; "native"],
-            [(OASISExpr.EBool true, S [A "-w"; A "@a"])]);
+            [(OASISExpr.EBool true, S [A "-w"; A "@a"; A "-g"])]);
           (["oasis_library_cobson_byte"; "ocaml"; "compile"; "byte"],
             [(OASISExpr.EBool true, S [A "-w"; A "@a"])]);
           (["oasis_library_cobson_native"; "ocaml"; "compile"; "native"],
-            [(OASISExpr.EBool true, S [A "-w"; A "@a"])])
+            [(OASISExpr.EBool true, S [A "-w"; A "@a"; A "-g"])])
        ];
      }
   ;;
