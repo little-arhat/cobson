@@ -12,6 +12,7 @@ Library cobson
   Path:            src
   BuildTools:      ocamlbuild
   Modules:         Bson
+  InternalModules: Binary, Util
   BuildDepends:    calendar, camlp4
   NativeOpt:       -w @a
   ByteOpt:         -w @a
