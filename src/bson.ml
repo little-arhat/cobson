@@ -128,35 +128,36 @@ let encode_to_buffer document =
   let adds = Buffer.add_string buf in
   let rec encode_document doc = match doc with
     | (key, element)::tail ->
-      encode_cstring key; encode_element element; encode_document tail
+      encode_element element (fun chr -> addc chr; encode_cstring key);
+      encode_document tail
     | _ -> addc '\x00'
-  and encode_element el = match el with
-    | Double d -> addc '\x01'; adds <| pack_float d
-    | String s -> addc '\x02'; encode_string s
+  and encode_element el addp = match el with
+    | Double d -> addp '\x01'; adds <| pack_float d
+    | String s -> addp '\x02'; encode_string s
     | Document d -> let len = list_length_int32 d in
-                    addc '\x03'; adds <| pack_int32 len; encode_document d
+                    addp '\x03'; adds <| pack_int32 len; encode_document d
     | Array l -> let len = List.length l in
                  let len' = Int32.of_int len in
                  let d = List.combine (List.map string_of_int <| range len) l in
-                 addc '\x04'; adds <| pack_int32 len'; encode_document d
-    | BinaryData bd -> addc '\x05'; encode_binary bd
-    | ObjectId s -> addc '\x07'; adds s
-    | Boolean b -> addc '\x08'; adds (if b then "\x01" else "\x00")
-    | Datetime dt -> addc '\x09'; adds & pack_float & Calendar.to_unixfloat dt
-    | Null -> addc '\x0A'
-    | Regex (first, sec) -> addc '\x0B'; encode_cstring first; encode_cstring sec
-    | JSCode s -> addc '\x0D'; encode_string s
-    | Symbol s -> addc '\x0E'; encode_string s
+                 addp '\x04'; adds <| pack_int32 len'; encode_document d
+    | BinaryData bd -> addp '\x05'; encode_binary bd
+    | ObjectId s -> addp '\x07'; adds s
+    | Boolean b -> addp '\x08'; addc (if b then '\x01' else '\x00')
+    | Datetime dt -> addp '\x09'; adds & pack_float & Calendar.to_unixfloat dt
+    | Null -> addp '\x0A'
+    | Regex (first, sec) -> addp '\x0B'; encode_cstring first; encode_cstring sec
+    | JSCode s -> addp '\x0D'; encode_string s
+    | Symbol s -> addp '\x0E'; encode_string s
     | JSCodeWithScope (s, d) ->
       let len = Int32.add (str_length_int32 s) (list_length_int32 d) |>
-                Int32.add 10l (* 2*4 - int32 fields + 2*1 -- trailing nulls *)
+          Int32.add 10l (* 2*4 - int32 fields + 2*1 -- trailing nulls *)
       in
-      addc '\x0f'; adds (pack_int32 len); encode_string s; encode_document d
-    | Int32 i -> addc '\x10'; adds <| pack_int32 i
-    | Timestamp l -> addc '\x11'; adds <| pack_int64 l
-    | Int64 l -> addc '\x12'; adds <| pack_int64 l
-    | Minkey -> addc '\xFF'
-    | Maxkey -> addc '\x7F'
+      addp '\x0f'; adds (pack_int32 len); encode_string s; encode_document d
+    | Int32 i -> addp '\x10'; adds <| pack_int32 i
+    | Timestamp l -> addp '\x11'; adds <| pack_int64 l
+    | Int64 l -> addp '\x12'; adds <| pack_int64 l
+    | Minkey -> addp '\xFF'
+    | Maxkey -> addp '\x7F'
   and encode_string s = adds & pack_int32 & str_length_int32 s; encode_cstring s
   and encode_cstring s = adds s; addc '\x00'
   and encode_binary bd =
@@ -175,8 +176,6 @@ let encode_to_buffer document =
   let len32 = Int32.of_int <| Buffer.length buf in
   let () = buffer_change_substring buf 0 <| pack_int32 len32 in
   buf
-
-(* let encode_to_string = encode_to_stream >> ES.to_string_fun (fun i -> i) *)
 
 let encode_to_string = encode_to_buffer >> Buffer.contents
 
