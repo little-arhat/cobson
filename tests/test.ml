@@ -22,7 +22,7 @@ let arbitrary_double =
 let arbitrary_elstring =
   string_wrapper (fun s -> String s)
 let arbitrary_objectid =
-  map_gen (fun s -> ObjectId s) (resize 12 arbitrary_string)
+  map_gen (fun s -> ObjectId (to_objectid s)) (arbitrary_stringN 12)
 let arbitrary_datetime =
   map_gen (fun f -> Datetime (Calendar.from_unixfloat f)) arbitrary_float
 let arbitrary_boolean =
@@ -106,7 +106,7 @@ let rec show_element = function
   | Document d -> sw "Document" & show_document d
   | Array a -> sw "Array" & show_array a
   | BinaryData bd -> sw "BinaryData" & show_binary bd
-  | ObjectId s -> sw "ObjectId" & show_string s
+  | ObjectId s -> sw "ObjectId" & show_string & from_objectid s
   | Datetime d -> sw "Datetime" & (Printer.Calendar.sprint "%c" d)
   | Null -> "Null"
   | Boolean b -> sw "Boolean" & show_bool b
@@ -134,7 +134,7 @@ and show_document l = show_list show_item l
 let testable_doc_to_bool =
   testable_fun (arbitrary_document ()) show_document testable_bool
 
-let cl = check testable_doc_to_bool {quick with maxTest = 5}
+let cld = quickCheck testable_doc_to_bool
 
 let prop_parseunparse doc =
   try
@@ -142,9 +142,21 @@ let prop_parseunparse doc =
   with MalformedBSON s ->
     let () = print_endline s in
     false
+let testable_objectid_to_bool =
+  testable_fun arbitrary_objectid show_element testable_bool
+
+let prop_objectid = function
+  | ObjectId s -> String.length (from_objectid s) = 12
+  | Double _ | String _ | Document _ | Array _ | BinaryData _
+  | Datetime _ | Null | Boolean _ | Regex _ | JSCode _
+  | Symbol _ | JSCodeWithScope _ | Int32 _ | Timestamp _
+  | Int64 _  | Minkey | Maxkey -> true
+
+let clo = quickCheck testable_objectid_to_bool
 
 let main () =
-  cl prop_parseunparse
+  clo prop_objectid;
+  cld prop_parseunparse
 
 let () =
   main ()
