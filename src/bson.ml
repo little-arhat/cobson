@@ -86,7 +86,8 @@ let decode_stream bytes =
     | '\x12' -> Int64 (parse_int64 st)
     | '\xFF' -> Minkey
     | '\x7F' -> Maxkey
-    | _ -> malformed "parse_element: invalid type"
+    | c -> malformed &
+      Printf.sprintf "parse_element: invalid type: %s" (Char.escaped c)
   and parse_cstring = ES.take_while (fun c -> c <> '\x00') >> ES.to_string
   and parse_double = ES.take_string 8 >> unpack_float
   and parse_int32 = ES.take_string 4 >> unpack_int32
@@ -124,7 +125,9 @@ let decode_stream bytes =
   in
   match S.peek bytes with
     | None -> res
-    | Some c -> let () = print_int (Char.code c); print_newline() in malformed "data after trailing null byte!"
+    | Some c ->
+      let () = print_int (Char.code c); print_newline() in
+      malformed "data after trailing null byte!"
 
 let decode_string = S.of_string >> decode_stream
 
