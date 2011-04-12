@@ -9,6 +9,10 @@ open Bson
 let ( |> ) x f = f x
 let ( <| ) f x = f x
 let ( & ) f x = f x
+let pack1 g = promote (fun () -> g)
+let pack lst = List.map pack1 lst
+let unpack1 f = f ()
+let unpack lst  = List.map unpack1 lst
 
 (* deriving *)
 
@@ -64,37 +68,41 @@ let arbitrary_binary =
 
 
 let rec arbitrary_element () =
-  oneof [arbitrary_double;
-         arbitrary_elstring;
-         arbitrary_eldocument ();
-         arbitrary_array ();
-         arbitrary_binary;
-         arbitrary_objectid;
-         arbitrary_datetime;
-         ret_gen Null;
-         arbitrary_boolean;
-         arbitrary_regex;
-         arbitrary_jscode;
-         arbitrary_symbol;
-         arbitrary_jscodewithscope ();
-         arbitrary_elint32;
-         arbitrary_timestamp;
-         arbitrary_elint64;
-         ret_gen Minkey;
-         ret_gen Maxkey;
-        ]
+  oneof (List.append
+           [promote arbitrary_eldocument;
+            promote arbitrary_array;
+            promote arbitrary_jscodewithscope
+           ]
+           (pack [arbitrary_double;
+                  arbitrary_elstring;
+                  arbitrary_binary;
+                  arbitrary_objectid;
+                  arbitrary_datetime;
+                  ret_gen Null;
+                  arbitrary_boolean;
+                  arbitrary_regex;
+                  arbitrary_jscode;
+                  arbitrary_symbol;
+                  arbitrary_elint32;
+                  arbitrary_timestamp;
+                  arbitrary_elint64;
+                  ret_gen Minkey;
+                  ret_gen Maxkey;
+                 ]
+           ))
 and arbitrary_array () =
-  map_gen (fun a -> Array a) & arbitrary_list & arbitrary_element ()
+  map_gen (fun a -> Array (unpack a)) & arbitrary_list & arbitrary_element ()
 and arbitrary_item () =
-  arbitrary_pair arbitrary_cstring & arbitrary_element ()
+  arbitrary_pair (pack1 arbitrary_cstring) (arbitrary_element ())
 and arbitrary_eldocument () =
   map_gen (fun d -> Document d) & arbitrary_document ()
-and arbitrary_jscodewithscope () = ret_gen (JSCodeWithScope ("", []))
-(* and arbitrary_jscodewithscope () = *)
-(*   map_gen (fun p -> JSCodeWithScope p) & *)
-(*     arbitrary_pair arbitrary_string & arbitrary_document () *)
+and arbitrary_jscodewithscope () =
+  map_gen (fun (s, d) -> JSCodeWithScope (s, d)) &
+    arbitrary_pair arbitrary_string & arbitrary_document ()
 and arbitrary_document () =
-  arbitrary_list & arbitrary_item ()
+  (arbitrary_list & (arbitrary_item () >>= (fun (us, ue) ->
+    pack1 & ret_gen (unpack1 us, unpack1 ue)))) >>= (fun lg ->
+      ret_gen & unpack lg)
 
 let show_cstring = show_string
 
@@ -139,9 +147,17 @@ let cld = quickCheck testable_doc_to_bool
 let prop_parseunparse doc =
   try
     decode (encode doc) = doc
-  with MalformedBSON s ->
-    let () = print_endline s in
-    false
+  with
+    |MalformedBSON s ->
+      let () = print_endline s in
+      false
+    | Stream.Failure ->
+      let () = Printf.printf "Stream.Failure\n" in
+      false
+    | Stream.Error s ->
+      let () = Printf.printf "Stream.Error %s\n" s in
+      false
+
 let testable_objectid_to_bool =
   testable_fun arbitrary_objectid show_element testable_bool
 
