@@ -8,6 +8,7 @@ module S = Stream
 
 (* TODO: make functor to use custom types for list at least *)
 (* TODO: use Res monad (manatki are cool!)  *)
+(* TODO: check ranges *)
 
 exception MalformedBSON of string
 let malformed s = raise (MalformedBSON s)
@@ -114,7 +115,7 @@ let decode_stream bytes =
   in
   match S.peek bytes with
     | None -> res
-    | Some _ -> malformed "data after trailing null byte!"
+    | Some c -> let () = print_int (Char.code c); print_newline() in malformed "data after trailing null byte!"
 
 let decode_string = S.of_string >> decode_stream
 
@@ -126,20 +127,28 @@ let encode_to_buffer document =
   let buf = Buffer.create 16 in
   let addc = Buffer.add_char buf in
   let adds = Buffer.add_string buf in
-  let rec encode_document doc = match doc with
+  let curpos () = Buffer.length buf in
+  let dummy = "\000\000\000\000" in
+  let patch_length pos =
+    let len = Int32.of_int & (Buffer.length buf) - pos in
+    buffer_change_substring buf pos & pack_int32 len
+  in
+  let rec encode_document doc pos = match doc with
     | (key, element)::tail ->
       encode_element element (fun chr -> addc chr; encode_cstring key);
-      encode_document tail
-    | _ -> addc '\x00'
+      encode_document tail pos
+    | _ -> addc '\x00'; patch_length pos
   and encode_element el addp = match el with
     | Double d -> addp '\x01'; adds <| pack_float d
     | String s -> addp '\x02'; encode_string s
-    | Document d -> let len = list_length_int32 d in
-                    addp '\x03'; adds <| pack_int32 len; encode_document d
+    | Document d -> let () = addp '\x03' in
+                    let pos = curpos () in
+                    adds dummy; encode_document d pos
     | Array l -> let len = List.length l in
-                 let len' = Int32.of_int len in
                  let d = List.combine (List.map string_of_int <| range len) l in
-                 addp '\x04'; adds <| pack_int32 len'; encode_document d
+                 let () = addp '\x04' in
+                 let pos = curpos () in
+                 adds dummy; encode_document d pos
     | BinaryData bd -> addp '\x05'; encode_binary bd
     | ObjectId s -> addp '\x07'; adds s
     | Boolean b -> addp '\x08'; addc (if b then '\x01' else '\x00')
@@ -148,19 +157,23 @@ let encode_to_buffer document =
     | Regex (first, sec) -> addp '\x0B'; encode_cstring first; encode_cstring sec
     | JSCode s -> addp '\x0D'; encode_string s
     | Symbol s -> addp '\x0E'; encode_string s
-    | JSCodeWithScope (s, d) ->
-      let len = Int32.add (str_length_int32 s) (list_length_int32 d) |>
-          Int32.add 10l (* 2*4 - int32 fields + 2*1 -- trailing nulls *)
-      in
-      addp '\x0f'; adds (pack_int32 len); encode_string s; encode_document d
+    | JSCodeWithScope (s, d) -> let () = addp '\x0f' in
+                                let pos_js = curpos () in
+                                let () = adds dummy; encode_string s in
+                                let pos_d = curpos () in
+                                encode_document d pos_d; patch_length pos_js
     | Int32 i -> addp '\x10'; adds <| pack_int32 i
     | Timestamp l -> addp '\x11'; adds <| pack_int64 l
     | Int64 l -> addp '\x12'; adds <| pack_int64 l
     | Minkey -> addp '\xFF'
     | Maxkey -> addp '\x7F'
-  and encode_string s = adds & pack_int32 & str_length_int32 s; encode_cstring s
+  and encode_string s =
+    (* length with trailing null byte *)
+    let len = Int32.add 1l & str_length_int32 s in
+    adds & pack_int32 len; encode_cstring s
   and encode_cstring s = adds s; addc '\x00'
   and encode_binary bd =
+    (* think, that i should patch length here too *)
     let (c, st) = encode_subtype bd in
     let len = str_length_int32 st in
     adds <| pack_int32 len; addc c; adds st
@@ -172,9 +185,7 @@ let encode_to_buffer document =
     | MD5 st -> ('\x05', st)
     | UserDefined st -> ('\x80', st)
   in
-  let () = adds "\x00\x00\x00\x00"; encode_document document in
-  let len32 = Int32.of_int <| Buffer.length buf in
-  let () = buffer_change_substring buf 0 <| pack_int32 len32 in
+  let () = adds dummy; encode_document document 0 in
   buf
 
 let encode_to_string = encode_to_buffer >> Buffer.contents

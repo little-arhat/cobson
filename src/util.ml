@@ -72,7 +72,7 @@ let list_unfold cons pred start =
 
 let range ?(start=0) stop = list_unfold (pred >> double) ((==) start) stop
 
-let str_length_int32 s = String.length s |> Int32.of_int
+let str_length_int32 s = Int32.of_int & String.length s
 
 (* resource management operations *)
 let try_finally action finally =
