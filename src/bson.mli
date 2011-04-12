@@ -2,6 +2,13 @@ open CalendarLib
 
 exception MalformedBSON of string
 
+type cstring = string
+type objectid = private string
+
+exception IncorrectValue of string
+val from_objectid : objectid -> string
+val to_objectid : string -> objectid
+
 type element =
   | Double of float
   | String of string
@@ -21,8 +28,6 @@ type element =
   | Int64 of int64
   | Minkey
   | Maxkey
-and cstring = string
-and objectid = string
 and binary =
   | Generic of string
   | Function of string

@@ -8,10 +8,21 @@ module S = Stream
 
 (* TODO: make functor to use custom types for list at least *)
 (* TODO: use Res monad (manatki are cool!)  *)
-(* TODO: check ranges *)
+(* TODO: check ranges for timestamps *)
 
 exception MalformedBSON of string
 let malformed s = raise (MalformedBSON s)
+
+type cstring = string
+type objectid = string
+
+exception IncorrectValue of string
+let incorrect s = raise (IncorrectValue s)
+
+let from_objectid x = x
+let to_objectid x =
+  if String.length x = 12 then x
+  else incorrect x
 
 type element =
   | Double of float
@@ -32,8 +43,6 @@ type element =
   | Int64 of int64
   | Minkey
   | Maxkey
-and cstring = string
-and objectid = string
 and binary =
   | Generic of string
   | Function of string
