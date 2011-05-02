@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 785c3019dde9302416662c40b6facd83) *)
+(* DO NOT EDIT (digest: 1b9ba2e15324f7cadc8536eeb230ca27) *)
 module OASISGettext = struct
 # 21 "/home/typhon/kamlo/oasis/src/oasis/OASISGettext.ml"
   
@@ -470,15 +470,15 @@ let package_default =
           (["oasis_library_cobson_byte"; "ocaml"; "link"; "byte"],
             [(OASISExpr.EBool true, S [A "-w"; A "@a"])]);
           (["oasis_library_cobson_native"; "ocaml"; "link"; "native"],
-            [(OASISExpr.EBool true, S [A "-w"; A "@a"; A "-g"])]);
+            [(OASISExpr.EBool true, S [A "-w"; A "@a"])]);
           (["oasis_library_cobson_byte"; "ocaml"; "ocamldep"; "byte"],
             [(OASISExpr.EBool true, S [A "-w"; A "@a"])]);
           (["oasis_library_cobson_native"; "ocaml"; "ocamldep"; "native"],
-            [(OASISExpr.EBool true, S [A "-w"; A "@a"; A "-g"])]);
+            [(OASISExpr.EBool true, S [A "-w"; A "@a"])]);
           (["oasis_library_cobson_byte"; "ocaml"; "compile"; "byte"],
             [(OASISExpr.EBool true, S [A "-w"; A "@a"])]);
           (["oasis_library_cobson_native"; "ocaml"; "compile"; "native"],
-            [(OASISExpr.EBool true, S [A "-w"; A "@a"; A "-g"])])
+            [(OASISExpr.EBool true, S [A "-w"; A "@a"])])
        ];
      }
   ;;

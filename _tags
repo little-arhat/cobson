@@ -1,12 +1,12 @@
 # OASIS_START
-# DO NOT EDIT (digest: d9dff0fcccd51a2ef999f0af078a2035)
+# DO NOT EDIT (digest: bd2a1b0ec5ee8ca62401a3a639aa4ed0)
 # Executable test
-"tests/test.byte": oasis_executable_test_byte
+<tests/test.{native,byte}>: oasis_executable_test_byte
 <tests/*.ml{,i}>: oasis_executable_test_byte
-"tests/test.byte": oasis_executable_test_native
+<tests/test.{native,byte}>: oasis_executable_test_native
 <tests/*.ml{,i}>: oasis_executable_test_native
-"tests/test.byte": pkg_quickcheck
-"tests/test.byte": pkg_calendar
+<tests/test.{native,byte}>: pkg_quickcheck
+<tests/test.{native,byte}>: pkg_calendar
 <tests/*.ml{,i}>: pkg_quickcheck
 <tests/*.ml{,i}>: pkg_calendar
 # Library cobson

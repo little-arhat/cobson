@@ -8,19 +8,24 @@ LicenseFile: LICENSE
 Plugins:     DevFiles (0.2), META (0.2), StdFiles (0.2)
 BuildTools: ocamlbuild
 
+Flag tests
+  Description: Build tests
+  Default: true
+
 Library cobson
   Path:            src
-  BuildTools:      ocamlbuild
   Modules:         Bson
   InternalModules: Binary, Util
   BuildDepends:    calendar, camlp4
-  NativeOpt:       -w @a -g
+  NativeOpt:       -w @a
   ByteOpt:         -w @a
 
 Executable test
+  Build$:          flag(tests)
+  Install$:        flag(tests)
   Path: tests/
   Install: false
-  CompiledObject: byte
+  CompiledObject: best
   MainIs: test.ml
   BuildDepends: quickcheck, calendar
   NativeOpt:       -w @a -g

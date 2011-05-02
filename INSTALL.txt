@@ -3,7 +3,7 @@
 This is the INSTALL file for the cobson distribution.
 
 This package uses OASIS to generate its build system. See section OASIS for
-full information. 
+full information.
 
 Dependencies
 ============
@@ -25,7 +25,7 @@ Installing
 Uninstalling
 ============
 
-1. Go to the root of the package 
+1. Go to the root of the package
 2. Run 'ocaml setup.ml -uninstall'
 
 OASIS
@@ -36,3 +36,11 @@ configuration file. The generated setup only depends on the standard OCaml
 installation: no additional library is required.
 
 (* OASIS_STOP *)
+
+NOTES
+=====
+
+Use --disable-tests if you don't want to build tests (with additional
+dependency -- quickcheck).
+
+Install quickcheck for tests from https://github.com/camlunity/ocaml-quickcheck
