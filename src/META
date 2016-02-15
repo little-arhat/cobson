@@ -1,10 +1,12 @@
 # OASIS_START
-# DO NOT EDIT (digest: 3826b0448015685996f18135698ab0e8)
+# DO NOT EDIT (digest: 7578c6175a77e8f2652b47b293f442a4)
 version = "0.0.1"
 description = "BSON codec for OCaml"
 requires = "calendar camlp4"
 archive(byte) = "cobson.cma"
+archive(byte, plugin) = "cobson.cma"
 archive(native) = "cobson.cmxa"
+archive(native, plugin) = "cobson.cmxs"
 exists_if = "cobson.cma"
 # OASIS_STOP
 

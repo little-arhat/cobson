@@ -1,11 +1,17 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 1eb21e866708a97a7d809a0cde341a4c) *)
-This is the README file for the cobson distribution.
+(* DO NOT EDIT (digest: 88c591cf8cfaf8a5dec2e9bc5b06d5b9) *)
 
-BSON codec for OCaml
+cobson - BSON codec for OCaml
+=============================
 
-See the files INSTALL.txt for building and installation instructions. See the
-file LICENSE for copying conditions.
+See the file [INSTALL.txt](INSTALL.txt) for building and installation
+instructions.
 
+Copyright and license
+---------------------
+
+cobson is distributed under the terms of the MIT License.
+
+See [LICENSE](LICENSE) for more information.
 
 (* OASIS_STOP *)

@@ -1,21 +1,35 @@
 # OASIS_START
-# DO NOT EDIT (digest: bd2a1b0ec5ee8ca62401a3a639aa4ed0)
+# DO NOT EDIT (digest: b9814f33ccbe5d8739614212ba483214)
+# Ignore VCS directories, you can use the same kind of rule outside
+# OASIS_START/STOP if you want to exclude directories that contains
+# useless stuff for the build process
+true: annot, bin_annot
+<**/.svn>: -traverse
+<**/.svn>: not_hygienic
+".bzr": -traverse
+".bzr": not_hygienic
+".hg": -traverse
+".hg": not_hygienic
+".git": -traverse
+".git": not_hygienic
+"_darcs": -traverse
+"_darcs": not_hygienic
+# Library cobson
+"src/cobson.cmxs": use_cobson
+<src/cobson.{cma,cmxa}>: oasis_library_cobson_byte
+<src/*.ml{,i,y}>: oasis_library_cobson_byte
+<src/cobson.{cma,cmxa}>: oasis_library_cobson_native
+<src/*.ml{,i,y}>: oasis_library_cobson_native
+<src/*.ml{,i,y}>: pkg_calendar
+<src/*.ml{,i,y}>: pkg_camlp4
 # Executable test
 <tests/test.{native,byte}>: oasis_executable_test_byte
-<tests/*.ml{,i}>: oasis_executable_test_byte
+<tests/*.ml{,i,y}>: oasis_executable_test_byte
 <tests/test.{native,byte}>: oasis_executable_test_native
-<tests/*.ml{,i}>: oasis_executable_test_native
-<tests/test.{native,byte}>: pkg_quickcheck
+<tests/*.ml{,i,y}>: oasis_executable_test_native
 <tests/test.{native,byte}>: pkg_calendar
-<tests/*.ml{,i}>: pkg_quickcheck
-<tests/*.ml{,i}>: pkg_calendar
-# Library cobson
-"src": include
-<src/cobson.{cma,cmxa}>: oasis_library_cobson_byte
-<src/*.ml{,i}>: oasis_library_cobson_byte
-<src/cobson.{cma,cmxa}>: oasis_library_cobson_native
-<src/*.ml{,i}>: oasis_library_cobson_native
-<src/*.ml{,i}>: pkg_camlp4
-<src/*.ml{,i}>: pkg_calendar
+<tests/test.{native,byte}>: pkg_quickcheck
+<tests/*.ml{,i,y}>: pkg_calendar
+<tests/*.ml{,i,y}>: pkg_quickcheck
 # OASIS_STOP
 "src/bson.ml": syntax_camlp4o

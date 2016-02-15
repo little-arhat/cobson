@@ -68,11 +68,11 @@ let decode_stream bytes =
     | '\x01' -> Double (parse_double st)
     | '\x02' -> String (parse_string st)
     | '\x03' -> Document (parse_document st)
-    | '\x04' -> Array (List.map snd <| parse_document st)
+    | '\x04' -> Array (List.map snd @@ parse_document st)
     | '\x05' -> BinaryData (parse_binary st)
     | '\x07' -> ObjectId (ES.take_string 12 st)
-    | '\x08' -> Boolean (parse_boolean <| S.next st)
-    | '\x09' -> Datetime (Calendar.from_unixfloat <| parse_double st)
+    | '\x08' -> Boolean (parse_boolean @@ S.next st)
+    | '\x09' -> Datetime (Calendar.from_unixfloat @@ parse_double st)
     | '\x0A' -> Null
     | '\x0B' -> let first = parse_cstring st in
                 let sec = parse_cstring st in
@@ -86,7 +86,7 @@ let decode_stream bytes =
     | '\x12' -> Int64 (parse_int64 st)
     | '\xFF' -> Minkey
     | '\x7F' -> Maxkey
-    | c -> malformed &
+    | c -> malformed @@
       Printf.sprintf "parse_element: invalid type: %s" (Char.escaped c)
   and parse_cstring = ES.take_while (fun c -> c <> '\x00') >> ES.to_string
   and parse_double = ES.take_string 8 >> unpack_float
@@ -100,7 +100,7 @@ let decode_stream bytes =
     | [< len = parse_int32; rest >] ->
       let len' = Int32.sub len 1l in
       let int_len = Int32.to_int len' in
-      let s = ES.take_int32 len' rest |> ES.to_string ~len:int_len
+      let s = ES.take_int32 len' rest |> ES.to_string_opt ~len:int_len
       in S.junk rest ; s (* junk trailing null *)
     | [< >] -> malformed "parse_string"
   and parse_binary = parser
@@ -133,7 +133,7 @@ let decode_string = S.of_string >> decode_stream
 
 let decode = decode_string
 
-let decode_file = flip with_file_in <| S.of_channel >> decode_stream
+let decode_file = flip with_file_in @@ S.of_channel >> decode_stream
 
 let encode_to_buffer document =
   let buf = Buffer.create 16 in
@@ -142,8 +142,8 @@ let encode_to_buffer document =
   let curpos () = Buffer.length buf in
   let dummy = "\000\000\000\000" in
   let patch_length pos =
-    let len = Int32.of_int & (Buffer.length buf) - pos in
-    buffer_change_substring buf pos & pack_int32 len
+    let len = Int32.of_int @@ (Buffer.length buf) - pos in
+    buffer_change_substring buf pos @@ pack_int32 len
   in
   let rec encode_document doc pos = match doc with
     | (key, element)::tail ->
@@ -151,20 +151,20 @@ let encode_to_buffer document =
       encode_document tail pos
     | _ -> addc '\x00'; patch_length pos
   and encode_element el addp = match el with
-    | Double d -> addp '\x01'; adds <| pack_float d
+    | Double d -> addp '\x01'; adds @@ pack_float d
     | String s -> addp '\x02'; encode_string s
     | Document d -> let () = addp '\x03' in
                     let pos = curpos () in
                     adds dummy; encode_document d pos
     | Array l -> let len = List.length l in
-                 let d = List.combine (List.map string_of_int <| range len) l in
+                 let d = List.combine (List.map string_of_int @@ range len) l in
                  let () = addp '\x04' in
                  let pos = curpos () in
                  adds dummy; encode_document d pos
     | BinaryData bd -> addp '\x05'; encode_binary bd
     | ObjectId s -> addp '\x07'; adds s
     | Boolean b -> addp '\x08'; addc (if b then '\x01' else '\x00')
-    | Datetime dt -> addp '\x09'; adds & pack_float & Calendar.to_unixfloat dt
+    | Datetime dt -> addp '\x09'; adds @@ pack_float @@ Calendar.to_unixfloat dt
     | Null -> addp '\x0A'
     | Regex (first, sec) -> addp '\x0B'; encode_cstring first; encode_cstring sec
     | JSCode s -> addp '\x0D'; encode_string s
@@ -174,21 +174,21 @@ let encode_to_buffer document =
                                 let () = adds dummy; encode_string s in
                                 let pos_d = curpos () in
                                 encode_document d pos_d; patch_length pos_js
-    | Int32 i -> addp '\x10'; adds <| pack_int32 i
-    | Timestamp l -> addp '\x11'; adds <| pack_int64 l
-    | Int64 l -> addp '\x12'; adds <| pack_int64 l
+    | Int32 i -> addp '\x10'; adds @@ pack_int32 i
+    | Timestamp l -> addp '\x11'; adds @@ pack_int64 l
+    | Int64 l -> addp '\x12'; adds @@ pack_int64 l
     | Minkey -> addp '\xFF'
     | Maxkey -> addp '\x7F'
   and encode_string s =
     (* length with trailing null byte *)
-    let len = Int32.add 1l & str_length_int32 s in
-    adds & pack_int32 len; encode_cstring s
+    let len = Int32.add 1l @@ str_length_int32 s in
+    adds @@ pack_int32 len; encode_cstring s
   and encode_cstring s = adds s; addc '\x00'
   and encode_binary bd =
     (* think, that i should patch length here too *)
     let (c, st) = encode_subtype bd in
     let len = str_length_int32 st in
-    adds <| pack_int32 len; addc c; adds st
+    adds @@ pack_int32 len; addc c; adds st
   and encode_subtype bd = match bd with
     | Generic st -> ('\x00', st)
     | Function st -> ('\x01', st)
