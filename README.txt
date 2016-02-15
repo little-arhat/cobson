@@ -1,3 +1,5 @@
+use https://github.com/MassD/bson .
+
 (* OASIS_START *)
 (* DO NOT EDIT (digest: 88c591cf8cfaf8a5dec2e9bc5b06d5b9) *)
 
