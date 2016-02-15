@@ -27,7 +27,7 @@ Executable test
   Install: false
   CompiledObject: best
   MainIs: test.ml
-  BuildDepends: quickcheck, calendar
+  BuildDepends: cobson, quickcheck, calendar
   NativeOpt:       -w @a -g
   ByteOpt:         -w @a -g
 

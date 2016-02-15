@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 805a7bd1865dbf6270f05af55d4635d5) *)
+(* DO NOT EDIT (digest: cd64324cfae53fe64c0d4fe16176f155) *)
 module OASISGettext = struct
 (* # 22 "src/oasis/OASISGettext.ml" *)
 
@@ -636,7 +636,7 @@ let package_default =
           (["oasis_executable_test_native"; "ocaml"; "compile"; "native"],
             [(OASISExpr.EBool true, S [A "-w"; A "@a"; A "-g"])])
        ];
-     includes = []
+     includes = [("tests", ["src"])]
   }
   ;;
 
